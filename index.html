@@ -801,6 +801,7 @@
 
           if (currentSteamID!= steamidInput.val() || firstfecth){  //detecting if a new steamid is written in the text input is important for player details refreshing (so we don't have to refresh every time)
             currentSteamID = fixSteamID(steamidInput.val());
+            steamidInput.val(currentSteamID); //visual
 
             if (steamidRemember.is(":checked")){
               localStorage.setItem('steamid', currentSteamID);
