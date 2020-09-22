@@ -187,8 +187,6 @@
   <script type="text/javascript" src="js/mdb.min.js"></script>
   <!-- Datatables  -->
   <script type="text/javascript" src="js/addons/datatables.min.js"></script>
-  <!-- Datatables Enum Ordering  -->
-  <script type="text/javascript" src="http://cdn.datatables.net/plug-ins/1.10.21/sorting/enum.js"></script>
   <!-- Custom scripts -->
   <script type="text/javascript">
 
@@ -315,7 +313,7 @@
         }
 
         //RECENT WR DATA
-        recentWRRequest = $.ajax({url: "http://kztimerglobal.com/api/v2.0/records/top/recent?tickrate=128&stage=0&modes_list_string=" + gameModeSelector.groupVal() + "&place_top_at_least=1&limit=100", dataType: 'json', success: function(result){
+        recentWRRequest = $.ajax({url: "https://kztimerglobal.com/api/v2.0/records/top/recent?tickrate=128&stage=0&modes_list_string=" + gameModeSelector.groupVal() + "&place_top_at_least=1&limit=100", dataType: 'json', success: function(result){
           
           currentWRRecentData = result;
 
@@ -433,7 +431,7 @@
       function GetSteamProfiles(){
         
         //https://github.com/Rob--W/cors-anywhere
-        let steamQueryString = "https://cors-anywhere.herokuapp.com/http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=023DC037A9187B9DD374365F858B5545&steamids="
+        let steamQueryString = "https://cors-anywhere.herokuapp.com/https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=023DC037A9187B9DD374365F858B5545&steamids="
 
         //no es NECESARIO se exacto en esto, con menos 5 ya esta, a pesar de que a veces sean menos las que necestio porque llegue al límite.
         let proStartLoop = proCardsDisplayed - 5;
@@ -463,7 +461,7 @@
         t.clear();
         t.draw();
 
-        recentTOP100Request = $.ajax({url: "http://kztimerglobal.com/api/v2.0/records/top/recent?tickrate=128&stage=0&modes_list_string=" + gameModeSelector.groupVal() + "&place_top_at_least=100&limit=100", dataType: 'json', success: function(result){
+        recentTOP100Request = $.ajax({url: "https://kztimerglobal.com/api/v2.0/records/top/recent?tickrate=128&stage=0&modes_list_string=" + gameModeSelector.groupVal() + "&place_top_at_least=100&limit=100", dataType: 'json', success: function(result){
           //I must get the info as a string insted of an object so i can substring the steam64 out of the data
           currentTOP100RecentData = result;
 
@@ -535,7 +533,7 @@
 
       // Copyright (C) 2011 by Will Tomlins
       // 
-      // Github profile: http://github.com/layam
+      // Github profile: https://github.com/layam
       //
       // Permission is hereby granted, free of charge, to any person obtaining a copy
       // of this software and associated documentation files (the "Software"), to deal

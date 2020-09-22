@@ -293,7 +293,7 @@
                 });
       $('.dataTables_length').addClass('bs-select');
 
-      $.ajax({url: "http://kztimerglobal.com/api/v2.0/maps?is_validated=true&limit=1000", dataType: 'json', success: function(result){
+      $.ajax({url: "https://kztimerglobal.com/api/v2.0/maps?is_validated=true&limit=1000", dataType: 'json', success: function(result){
         maps = result;
         //Autocomplete Initialization
         $("#map-input").autocomplete({
@@ -456,7 +456,7 @@
             //Debemos verificar si el mapa realmente existe, porque tal vez tenga filtros para los bonuses pero no para el stage 0
             //Pero si el ajax de la lista de mapas tarda mucho en llegar, no puedo usarlo todavía para verificar la existencia (prevención).
             //Como esto va a pasar en muy pocas ocasiones, no va a ser un peso para la api hacerle otra consulta
-            rankingRequest = $.ajax({url: "http://kztimerglobal.com/api/v2.0/maps/name/" + currentMap, dataType: 'json', success: function(backupResult){
+            rankingRequest = $.ajax({url: "https://kztimerglobal.com/api/v2.0/maps/name/" + currentMap, dataType: 'json', success: function(backupResult){
               if (backupResult!=null){
                 alert("This map has no data for this Game Mode and Run Type.");
                 currentMapID = backupResult.id;
@@ -540,7 +540,7 @@
       function GetRecordFilters () {
         //pido todos los filtros de una y proceso despues para no sobrecargar la api con 1 consulta cada vez que apretan el dropdown y es el mismo mapa
         if (recordFiltersRequest==null){ //para pedirlo solo una vez, reseteamos a null cuando cambiamos de mapa, no de modo/run type
-          recordFiltersRequest = $.ajax({url: "http://kztimerglobal.com/api/v2.0/record_filters?map_ids=" + currentMapID, dataType: 'json', success: function(result){
+          recordFiltersRequest = $.ajax({url: "https://kztimerglobal.com/api/v2.0/record_filters?map_ids=" + currentMapID, dataType: 'json', success: function(result){
             ShowRecordFilters(result);
           }});
         } else {

@@ -381,7 +381,7 @@
   <!-- Datatables  -->
   <script type="text/javascript" src="js/addons/datatables.min.js"></script>
   <!-- Datatables Enum Ordering  -->
-  <script type="text/javascript" src="http://cdn.datatables.net/plug-ins/1.10.21/sorting/enum.js"></script>
+  <script type="text/javascript" src="https://cdn.datatables.net/plug-ins/1.10.21/sorting/enum.js"></script>
   <!-- Custom scripts -->
   <script type="text/javascript">
 
@@ -850,7 +850,7 @@
         //el ajax de mapas SOLO lo llamamos si la data de mapas es null, si no es null, ya tenemos la data, no ahcemos el ajax, por lo tanto reseteamos unfinishedMaps con la data que tenemos
         if (maps==null && mapsRequest==null){
           
-          mapsRequest = $.ajax({url: "http://kztimerglobal.com/api/v2.0/maps?is_validated=true&limit=1000", dataType: 'json', success: function(result){
+          mapsRequest = $.ajax({url: "https://kztimerglobal.com/api/v2.0/maps?is_validated=true&limit=1000", dataType: 'json', success: function(result){
             
             maps = result;
 
@@ -1090,7 +1090,7 @@
         }
 
         //https://github.com/Rob--W/cors-anywhere
-        steamRequest = $.ajax({url: "https://cors-anywhere.herokuapp.com/http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=023DC037A9187B9DD374365F858B5545&steamids=" + steam64, dataType: 'json', success: function(result){
+        steamRequest = $.ajax({url: "https://cors-anywhere.herokuapp.com/https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=023DC037A9187B9DD374365F858B5545&steamids=" + steam64, dataType: 'json', success: function(result){
           //Avatar
           $("#playerAvatar").html('<a href="' + result.response.players[0].profileurl + '" target="blank"><img src="' + result.response.players[0].avatarfull + '" class="img-responsive"></img></a>');
 
