@@ -78,6 +78,11 @@
 
     <div class="container">
 
+      <!-- 16:9 aspect ratio -->
+      <div class="embed-responsive embed-responsive-16by9">
+        <iframe class="embed-responsive-item" src="https://youtube.com/embed/8IxKqJsZRXo?t=25"></iframe>
+      </div>
+
       <!--Mode Chooser-->
       <div class="row configuration-row">
         <div class="col text-right" style="border-right: 2px solid white;">
@@ -433,11 +438,11 @@
       {id: "gfy", title: "Stay Frosty", sticker: "Stay-Frosty", count: 0, goal: 8, achievement : 'Finish 8 maps with prefix "gfy" made by winter Nebs.'},
       {id: "zhop", title: "zPrince", sticker: "zPrince", count: 0, goal: 6, achievement : 'Finish 6 maps with prefix "zhop" or "zxp" made by zPrince.'},
       {id: "slide", title: "Surf's Up", sticker: "Surfs-Up", count: 0, goal: 10, achievement : 'Finish 10 maps with prefix "slide".'},
-      {id: "go", title: "Too Old For This", sticker: "Too-Old-For-This", count: 0, goal: 32, achievement : 'Finish 32 maps with sufix "go".'},
-      {id: "v2", title: "Remake Expert", sticker: "Remake-Expert", count: 0, goal: 50, achievement : 'Finish 50 maps with sufix "v2" or "v3".'},
-      {id: "fix", title: "Pros Don't Fix", sticker: "Pros-Dont-Fix", count: 0, goal: 40, achievement : 'Finish 40 maps with sufix "fix".'},
-      {id: "od", title: "Longevity", sticker: "Longevity", count: 0, goal: 8, achievement : 'Finish 8 maps with sufix "od" made by Overdose.'},
-      {id: "final", title: "Guinea Pig", sticker: "Guinea-Pig", count: 0, goal: 20, achievement : 'Finish 20 maps with sufix "final".'},
+      {id: "go", title: "Too Old For This", sticker: "Too-Old-For-This", count: 0, goal: 32, achievement : 'Finish 32 maps with suffix "go".'},
+      {id: "v2", title: "Remake Expert", sticker: "Remake-Expert", count: 0, goal: 50, achievement : 'Finish 50 maps with suffix "v2" or "v3".'},
+      {id: "fix", title: "Pros Don't Fix", sticker: "Pros-Dont-Fix", count: 0, goal: 40, achievement : 'Finish 40 maps with suffix "fix".'},
+      {id: "od", title: "Longevity", sticker: "Longevity", count: 0, goal: 8, achievement : 'Finish 8 maps with suffix "od" made by Overdose.'},
+      {id: "final", title: "Guinea Pig", sticker: "Guinea-Pig", count: 0, goal: 20, achievement : 'Finish 20 maps with suffix "final".'},
       {id: "moto", title: "Fancy Koi", sticker: "Fancy-Koi", count: 0, goal: 9, achievement : 'Find and finish 9 maps with anime sounds on the timer, made by Gemayue'},
       {id: "crown", title: "Crown", sticker: "Crown", count: 0, goal: 2, achievement : '<a href="maps.html?map=kz_erratum_v2">' + 'kz_erratum_v2</a> PRO Runner'},
       {id: "stan", title: ["", "Stan", "Stan Holo", "Stan Holo & Stan"], sticker: ["", "Stan", "Stan-Holo", "Stan-Holo"], count: 0, goal: 3, achievement : ["?????????",'????????? and <a href="maps.html?map=kz_blackness">kz_blackness</a> PRO Runner.', '<a href="maps.html?map=kz_afterlife">kz_afterlife</a> and ????????? PRO Runner.', '<a href="maps.html?map=kz_afterlife">kz_afterlife</a> and <a href="maps.html?map=kz_blackness">kz_blackness</a> PRO Runner.']},
@@ -848,7 +853,7 @@
           playerRequest.abort();  //abort ajax request if another one is needed
         }
 
-        //el ajax de mapas SOLO lo llamamos si la data de mapas es null, si no es null, ya tenemos la data, no ahcemos el ajax, por lo tanto reseteamos unfinishedMaps con la data que tenemos
+        //el ajax de mapas SOLO lo llamamos si la data de mapas es null, si no es null, ya tenemos la data, no ahcemos el ajax
         if (maps==null && mapsRequest==null){
           
           mapsRequest = $.ajax({url: "https://kztimerglobal.com/api/v2.0/maps?is_validated=true&limit=1000", dataType: 'json', success: function(result){
@@ -1090,8 +1095,7 @@
           steamRequest.abort();  //abort ajax request if another one is needed
         }
 
-        //https://github.com/Rob--W/cors-anywhere
-        steamRequest = $.ajax({url: "https://cors-anywhere.herokuapp.com/https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=023DC037A9187B9DD374365F858B5545&steamids=" + steam64, dataType: 'json', success: function(result){
+        steamRequest = $.ajax({url: "https://kzprofile.kreedz.top/api/v1/steam?steamids=" + steam64, dataType: 'json', success: function(result){
           //Avatar
           $("#playerAvatar").html('<a href="' + result.response.players[0].profileurl + '" target="blank"><img src="' + result.response.players[0].avatarfull + '" class="img-responsive"></img></a>');
 
