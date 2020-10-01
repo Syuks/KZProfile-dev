@@ -215,7 +215,7 @@
                         <a id="WorkshopLink" href="" target="_blank">
                           <i class="fab fa-steam"></i>
                         </a>
-                        <span id="WorkshopID" style="margin-left: 20px;">784515943</span>
+                        <span id="WorkshopID" style="margin-left: 20px;"></span>
                       </h1>
                     </div>
                   </div>
@@ -631,18 +631,19 @@
           videoURL = data[imageMapName].video;
           videoThumb = "https://img.youtube.com/vi/" + data[imageMapName].video.substring(26, 37) + "/0.jpg";
           workshopURL = data[imageMapName].workshop;
-        });
 
-        $("#mapImageModalTitle").html(imageMapName);
-
-        $("#mapImageVideo").html('<iframe class="embed-responsive-item" src="' + videoURL + '"></iframe>');
-        $("#mapImageVideoThumb").attr('src', videoThumb);
+          $("#mapImageModalTitle").html(imageMapName);
         
-        $("#mapImageFullRes").html('<img class="img-fluid" src="https://raw.githubusercontent.com/KZGlobalTeam/map-images/public/images/' + imageMapName + `.jpg" onerror='this.src="img/kz.png"'>`)
-        $("#mapImageFullResThumb").attr('src', 'https://raw.githubusercontent.com/KZGlobalTeam/map-images/public/webp/' + imageMapName + '.webp');
+          $("#mapImageVideo").html('<iframe class="embed-responsive-item" src="' + videoURL + '"></iframe>');
+          $("#mapImageVideoThumb").attr('src', videoThumb);
+          
+          $("#mapImageFullRes").html('<img class="img-fluid" src="https://raw.githubusercontent.com/KZGlobalTeam/map-images/public/images/' + imageMapName + `.jpg" onerror='this.src="img/kz.png"'>`)
+          $("#mapImageFullResThumb").attr('src', 'https://raw.githubusercontent.com/KZGlobalTeam/map-images/public/webp/' + imageMapName + '.webp');
 
-        $("#WorkshopLink").attr('href', workshopURL);
-        $("#WorkshopID").html(workshopURL.substring(55));
+          $("#WorkshopLink").attr('href', workshopURL);
+          $("#WorkshopID").html(workshopURL.substring(55));
+
+        });
 
       });
 
