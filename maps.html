@@ -194,7 +194,50 @@
             </button>
           </div>
           <div id="mapImageModalContent" class="modal-body text-center">
-            ...
+            <div id="mapImageCarousel" class="carousel slide" data-interval="false">
+              <div class="carousel-inner">
+                <div class="carousel-item active">
+                  <div id="mapImageVideo" class="embed-responsive embed-responsive-16by9">
+                    <!--iframe class="embed-responsive-item" src="https://youtube.com/embed/8IxKqJsZRXo?start=25"></iframe-->
+                    <!--div class="embed-responsive-item">
+                      <h1>KZ Profile</h1>
+                      <p>No video found.</p>
+                    </div-->
+                  </div>
+                </div>
+                <div id="mapImageFullRes" class="carousel-item">
+                  
+                </div>
+                <div class="carousel-item">
+                  <div class="embed-responsive embed-responsive-16by9">
+                    <div class="embed-responsive-item workshop-container">
+                      <h1>
+                        <a id="WorkshopLink" href="" target="_blank">
+                          <i class="fab fa-steam"></i>
+                        </a>
+                        <span id="WorkshopID" style="margin-left: 20px;">784515943</span>
+                      </h1>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!--/.Controls-->
+              <ol class="carousel-indicators">
+                <li data-target="#mapImageCarousel" data-slide-to="0" class="active">
+                  <img id="mapImageVideoThumb" src="" width="100" height="56">
+                  <div class="videoThumbOverlay"></div>
+                </li>
+                <li data-target="#mapImageCarousel" data-slide-to="1">
+                  <img id="mapImageFullResThumb" src="" width="100" height="56">
+                </li>
+                <li data-target="#mapImageCarousel" data-slide-to="2">
+                  <img src="img/WorkshopThumb.png" width="100" height="56">
+                </li>
+              </ol>
+            </div>
+          </div>
+          <div id="mapImageModalFooter" class="modal-footer justify-content-center text-center">
+            Have a better video? <a href="https://forms.gle/FMgWkKjBc53HDpkf8" target="_blank"><u>Share it!</u></a>
           </div>
         </div>
       </div>
@@ -513,16 +556,7 @@
 
         //IMAGE
         $("#mapImage").html('<a data-toggle="modal" data-target="#mapImageModal"><img class="img-fluid" src="https://raw.githubusercontent.com/KZGlobalTeam/map-images/public/webp/' + currentMap + `.webp" onerror='this.src="img/kz.png"' id="` + currentMap + `"></a>`);
-        /*$.ajax({url: "https://bitbucket.org/kztimerglobalteam/map-images/raw/f1eec9abf33e5e7d99c58c2ebc58c3280ec92df8/maps.json", dataType: 'json', success: function(result){
-          
-          for (let i = 0; i < result.length; i++){
-            if (result[i].name == currentMap){
-              $("#mapImage").html("<img src=" + result[i].thumb + "></img>");
-              break;
-            }
-          }
-        }});*/
-
+        
         //TIER
         for (let i = 0; i < maps.length; i++){
           if (maps[i].name == currentMap){
@@ -589,9 +623,26 @@
 
       $("#mapImageModal").on('show.bs.modal', function(){
         let imageMapName = event.target.id;
+        let videoURL;
+        let videoThumb;
+        let workshopURL;
+
+        $.getJSON( "js/videos.json", function( data ) {
+          videoURL = data[imageMapName].video;
+          videoThumb = "https://img.youtube.com/vi/" + data[imageMapName].video.substring(26, 37) + "/0.jpg";
+          workshopURL = data[imageMapName].workshop;
+        });
 
         $("#mapImageModalTitle").html(imageMapName);
-        $("#mapImageModalContent").html('<img class="img-fluid" src="https://raw.githubusercontent.com/KZGlobalTeam/map-images/public/images/' + imageMapName + `.jpg" onerror='this.src="img/kz.png"'>`)
+
+        $("#mapImageVideo").html('<iframe class="embed-responsive-item" src="' + videoURL + '"></iframe>');
+        $("#mapImageVideoThumb").attr('src', videoThumb);
+        
+        $("#mapImageFullRes").html('<img class="img-fluid" src="https://raw.githubusercontent.com/KZGlobalTeam/map-images/public/images/' + imageMapName + `.jpg" onerror='this.src="img/kz.png"'>`)
+        $("#mapImageFullResThumb").attr('src', 'https://raw.githubusercontent.com/KZGlobalTeam/map-images/public/webp/' + imageMapName + '.webp');
+
+        $("#WorkshopLink").attr('href', workshopURL);
+        $("#WorkshopID").html(workshopURL.substring(55));
 
       });
 
