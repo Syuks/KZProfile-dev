@@ -424,6 +424,58 @@ animation: rainbow 5s ease infinite;
     }
 }
 
+#mapImageCarousel .carousel-indicators {
+    position: relative;
+    height: 56px;
+    margin-top: 1rem;
+    margin-bottom: 0px;
+}
+
+#mapImageCarousel .carousel-indicators>li {
+    position: relative;
+    width: 100px;
+    height: 56px;
+    background-color: transparent;
+    border-bottom: 0px;
+    border-top: 0px;
+}
+
+#mapImageCarousel .carousel-indicators li img {
+    object-fit: cover;
+    display: block;
+    opacity: 0.3;
+}
+
+#mapImageCarousel .carousel-indicators li.active img {
+    opacity: 1;
+}
+
+#mapImageCarousel .carousel-indicators li.active:hover img {
+    opacity: 1;
+}
+
+#mapImageCarousel .carousel-indicators li:hover img {
+    opacity: 0.75;
+}
+
+.videoThumbOverlay {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 32px;
+    height: 32px;
+    background-image: url(../img/VideoOverlay.png);
+}
+
+.workshop-container {
+    background-image: url(../img/WorkshopBackground.png);
+    background-size:cover;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
 /*RANK COLORS*/
 
 .GOD{
