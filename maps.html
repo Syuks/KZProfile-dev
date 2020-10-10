@@ -49,6 +49,18 @@
 
             <!-- Dropdown -->
             <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" id="navbarDropdownCommunityLink" data-toggle="dropdown"
+                aria-haspopup="true" aria-expanded="false">Community</a>
+              <div class="dropdown-menu dropdown-primary" aria-labelledby="navbarDropdownCommunityLink">
+								<a class="dropdown-item" href="leaderboard.html">Leaderboards</a>
+								<a class="dropdown-item" href="servers.html">Servers</a>
+                <a class="dropdown-item" href="players.html">Players</a>
+                <a class="dropdown-item" href="bans.html">Bans</a>
+              </div>
+            </li>
+
+            <!-- Dropdown -->
+            <li class="nav-item dropdown">
               <a class="nav-link dropdown-toggle" id="navbarDropdownMenuLink" data-toggle="dropdown"
                 aria-haspopup="true" aria-expanded="false">Extras</a>
               <div class="dropdown-menu dropdown-primary" aria-labelledby="navbarDropdownMenuLink">
@@ -57,18 +69,18 @@
                 <a class="dropdown-item" href="https://www.youtube.com/c/Syuks" target="_blank">Tutorials</a>
               </div>
             </li>
-
           </ul>
-          <!-- Links -->
+          <!-- /Links -->
 
-          <form id="mapForm" class="form-inline" method="GET" autocomplete="off">
+          <form id="multiPurposeForm" class="form-inline" method="GET" autocomplete="off" style="margin-right: 20px;">
             <div class="md-form my-0">
-              <input id="map-input" class="form-control mr-sm-2 map-input" type="text" name="map-input" placeholder="Map" aria-label="Map">
+              <input id="multiPurposeInput" class="form-control mr-sm-2 multi-purpose-input" type="text" placeholder="Search" aria-label="Search" minlength="3">
               <i class="fas fa-search" aria-hidden="true"></i>
             </div>
           </form>
-        </div>
+          <div id="userLogin"></div>
 
+        </div>
       </div>
     </nav>
     <!--/.Navbar-->
@@ -130,7 +142,7 @@
             <div id="bonus-dropdown" class="dropdown-menu"></div>
           </h1>
           
-          <h1 id="mapTier" style="color: #cf4479;font-weight: 400;">
+          <h1 id="mapTier" style="font-weight: 400;">
             
           </h1>
         </div>
@@ -152,8 +164,16 @@
               </a>
             </div>
             <!-- 2. Table state changer -->
-            <div id="table-state-title" class="col d-flex align-items-center justify-content-center">
-              Map Ranking
+            <div class="col d-flex align-items-center justify-content-center">
+              <a id="table-state-left" style="z-index: 1;">
+                <i class="fas fa-angle-left"></i>
+              </a>
+              <div class="text-center" id="table-state-title" style="min-width: 150px;">
+                Map Ranking
+              </div>
+              <a id="table-state-right" style="z-index: 1;">
+                <i class="fas fa-angle-right"></i>
+              </a>
             </div>
             <!-- 3. Search form -->
             <div class="col d-flex flex-row-reverse align-items-center">
@@ -179,6 +199,8 @@
                 </thead>
               </table>
             </div>
+            <canvas id="WRsChart"></canvas>
+            <canvas id="distributionChart"></canvas>
           </div>
         </div>
       </div>
@@ -198,15 +220,15 @@
               <div class="carousel-inner">
                 <div class="carousel-item active">
                   <div id="mapImageVideo" class="embed-responsive embed-responsive-16by9">
-                    <!--iframe class="embed-responsive-item" src="https://youtube.com/embed/8IxKqJsZRXo?start=25"></iframe-->
-                    <!--div class="embed-responsive-item">
-                      <h1>KZ Profile</h1>
-                      <p>No video found.</p>
-                    </div-->
+                    
                   </div>
                 </div>
-                <div id="mapImageFullRes" class="carousel-item">
-                  
+                <div class="carousel-item">
+                  <div class="embed-responsive embed-responsive-16by9">
+                    <div id="mapImageFullRes" class="embed-responsive-item">
+
+                    </div>
+                  </div>
                 </div>
                 <div class="carousel-item">
                   <div class="embed-responsive embed-responsive-16by9">
@@ -228,7 +250,7 @@
                   <div class="videoThumbOverlay"></div>
                 </li>
                 <li data-target="#mapImageCarousel" data-slide-to="1">
-                  <img id="mapImageFullResThumb" src="" width="100" height="56">
+                  <img id="mapImageFullResThumb" src="" width="100" height="56" onerror='this.src="img/kz.png"'>
                 </li>
                 <li data-target="#mapImageCarousel" data-slide-to="2">
                   <img src="img/WorkshopThumb.png" width="100" height="56">
@@ -253,12 +275,16 @@
   <script type="text/javascript" src="js/popper.min.js"></script>
   <!-- Bootstrap core JavaScript -->
   <script type="text/javascript" src="js/bootstrap.min.js"></script>
+  <!-- Moment.js for time based charts.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js" integrity="sha512-qTXRIMyZIFb8iQcfjXWCO8+M5Tbc38Qi5WzdPOYZHIlZpzBHG3L3by84BBBOiRGiEb7KKtAOAs5qYdUiZiQNNQ==" crossorigin="anonymous"></script>
   <!-- MDB core JavaScript -->
   <script type="text/javascript" src="js/mdb.min.js"></script>
   <!-- Datatables  -->
   <script type="text/javascript" src="js/addons/datatables.min.js"></script>
   <!-- Autocomplete: https://github.com/Honatas/bootstrap-4-autocomplete  -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap-4-autocomplete/dist/bootstrap-4-autocomplete.min.js" crossorigin="anonymous"></script>
+  <!-- My Utility functions-->
+  <script type="text/javascript" src="js/myUtils.js"></script>
   <!-- Custom scripts -->
   <script type="text/javascript">
 
@@ -279,7 +305,19 @@
       }
     });
 
+    //LOGIN LOGIC
+    var storedSteamData = JSON.parse(localStorage.getItem('steamProfileData'));
+    if (storedSteamData!=null) {
+      $("#userLogin").html('<div class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><img class="rounded-circle" src="' + storedSteamData.response.players[0].avatar + '"></a><div class="dropdown-menu"><a class="dropdown-item waves-effect waves-light" href="extras/steam.html?logout=true">Logout</a></div></div>');
+    } else {
+      $("#userLogin").html('<a onclick="loadOpenID();"><img src="https://community.cloudflare.steamstatic.com/public/images/signinthroughsteam/sits_01.png"></a>');
+    }
+
     $(document).ready(function () {
+
+      var currentRankingData;
+      var currentWRsData;
+      var currentMapData = null; //global data from validated maps list
 
       var maps; //Maps JSON data for Tiers and Autocompletes
       var currentMap;
@@ -288,19 +326,23 @@
 
       //Global so I can cancel the ajax request as soon as a new one is needed
       var rankingRequest;
+      var mapsRequest;
       var recordFiltersRequest;
+      var WRsRequest;
 
       //usamos este bool para evitar problemas al cambiar el mode o run apenas carga la página
-      var firstfecth = true;
+      var firstfetch = true;
+
+      //bool for checking if we have already loaded the modal content
+      var emptyModal = true;
 
       //Local Storage
-      var storedSteamID = localStorage.getItem('steamid');
       var storedGameMode = localStorage.getItem('game_mode');
       var storedRunType = localStorage.getItem('run_type');
       var storedMap = localStorage.getItem('map');
 
       //UI Elements
-      var mapInput = $("#map-input");
+      var multiPurposeInput = $("#multiPurposeInput");
       var gameModeSelector = $("input[type='radio'][name='game_mode']");
       var runTypeSelector = $("input[type='radio'][name='run_type']");
       var bonusActivator = $("#bonus-activator");
@@ -336,23 +378,134 @@
                 });
       $('.dataTables_length').addClass('bs-select');
 
-      $.ajax({url: "https://kztimerglobal.com/api/v2.0/maps?is_validated=true&limit=1000", dataType: 'json', success: function(result){
-        maps = result;
-        //Autocomplete Initialization
-        $("#map-input").autocomplete({
-          source: maps,
-          label: "name",
-          treshold:2,
-          onSelectItem: onSelectAutocomplete
-        });
-      }});
+      //WRs Chart Initialization
+      var WRsCanvas = document.getElementById("WRsChart").getContext("2d");
+
+      var WRsChart = new Chart(WRsCanvas, {
+        type: 'line',
+        data: {
+          label: "WRs",
+          datasets: [{
+            label: 'WR Progression',
+            steppedLine: "after",
+            //lineTension: 0,
+            //cubicInterpolationMode: 'monotone',
+            players: [],
+            data: [],
+            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+            borderColor: 'rgba(255,99,132,1)',
+            borderWidth: 2
+          },
+          {
+            label: 'Current WR',
+            steppedLine: "after",
+            players: [],
+            data: [],
+            backgroundColor: 'rgba(54, 162, 235, .7)',
+            borderColor: 'rgba(54, 162, 235, .7)',
+            borderWidth: 2
+          }]
+        },
+        options: {
+          scales: {
+            xAxes: [{
+              type: 'time'
+            }],
+            yAxes: [{
+              ticks: {
+                callback: function(value, index, values) {
+                  var time = new Date(value * 1000).toISOString().substr(11, 11);
+                  return time;
+                }
+              }
+            }]
+          },
+          tooltips: {
+            callbacks: {
+              label: function(tooltipItem, data) {
+                var dataset = data.datasets[tooltipItem.datasetIndex];
+                var index = tooltipItem.index;
+                var time = new Date(tooltipItem.yLabel * 1000).toISOString().substr(11, 11);
+                return dataset.players[index] + ": " + time;
+              }
+            }
+          }
+        }
+      });
+
+      //If Enter is pressed on the multi purpose form
+      $("#multiPurposeForm").submit(function( event ) {
+        //it can be a map, a player name, a steam profile, a steam64 or a steam32
+        let searchValue = multiPurposeInput.val();
+        
+        //MAP
+        if (isValidKZMap(searchValue)) {
+          currentMap = searchValue;
+          firstfetch = true;
+          mapStage = 0;
+          GetMapData();
+        //STEAM 32/64
+        } else if (GetSteam32(searchValue)!=null) { //this function checks both 64 and 32 bit ids, will always return the 32 if input is valid
+          window.location.href = "/?steamid=" + GetSteam32(searchValue);
+        //Vanity Profiles
+        } else if (isValidVanityProfile(searchValue)) {
+          let vanityID = searchValue.split("/id/").pop().replace("/",""); //if there is a / at the end I don't want it, little unsafe
+          $.ajax({
+            url: "https://kzprofile.kreedz.top/api/v1/steam/vanity?url=" + vanityID,
+            dataType: 'json',
+            success: function(result){
+              window.location.href = "/?steamid=" + GetSteam32(result.response.steamid);
+            },
+            error: function(){
+              alert("Either this profile is invalid or the steam proxy is down.");
+            }
+          });
+        //Legacy Profiles
+        } else if (isValidSteamProfile(searchValue)) {
+          window.location.href = "/?steamid=" + GetSteam32(searchValue.split("/profiles/").pop().match(/\d+/)); //just get the numbers, safer (steam64)
+        //If they search for anything else, search a player with that name
+        } else {
+          window.location.href = "players.html?player=" + searchValue;
+        }
+        return false;
+      });
+
+      //focus multipurposeinput on empty key press
+      $(document).on('keypress',function() {
+        if ( $('input:focus').length == 0) {
+          multiPurposeInput.focus();
+        }
+      });
+
+      //maps ajax should be called only once
+      if (maps==null && mapsRequest==null){
+        mapsRequest = $.ajax({url: "https://kztimerglobal.com/api/v2.0/maps?is_validated=true&limit=1000", dataType: 'json', success: function(result){
+          
+          maps = result;
+          
+          //Autocomplete Initialization
+          multiPurposeInput.autocomplete({
+            source: maps,
+            label: "name",
+            treshold:2,
+            onSelectItem: onSelectAutocomplete
+          });
+
+          //if we have ranking data, that means that it fetched faster than maps list and is waiting for maps ajax to succeed
+          if (currentRankingData != null){
+            ProcessMapData();
+          }
+          //if we don't have ranking data, it means that maps list data fetched faster, so do nothing. As soon as ranking data arrives, we'll start analyzing
+
+        }});
+      }
 
       //Autocomplete Selection Callback
       function onSelectAutocomplete (item, element) {
         currentMap = item.label;
-        firstfecth = true;
+        firstfetch = true;
         mapStage = 0;
-        GetMapData(true);
+        GetMapData();
       }
 
       //First of all see if there are parameters in url. If there is one, load data from that, if there isn't load saved ones
@@ -361,18 +514,6 @@
       var gameModeParameter = URLSearchParameters.get("mode");
       var runTypeParameter = URLSearchParameters.get("run");
       var bonusParameter = URLSearchParameters.get("bonus");
-
-      //MAP PARAMETER
-      if (mapNameParameter!=null && mapNameParameter!="" ){
-        currentMap = mapNameParameter;
-        mapInput.val(currentMap); //visual
-      } else {
-        //If there is no map on the url, get stored map if there is one
-        if (storedMap!=null){       //si hay mapa guardado
-          currentMap = storedMap;   //conseguir el nombre
-          mapInput.val(currentMap); //rellenar el input con el nombre (visual)
-        }
-      }
 
       //GAME MODE PARAMETER
       if (gameModeParameter == "kz_timer" || gameModeParameter == "kz_simple" || gameModeParameter == "kz_vanilla"){
@@ -401,59 +542,40 @@
         mapStage = bonusParameter;
       }
 
-      //Now that we know if there are parameters on the link or stored data, we fetch the info
-      //if nothing was found for game mode or run type, it will use the default values
-      //but if nothing was found for steamid, do nothing, wait for a steamid to be placed on input
-      if (currentMap != null) {
-        GetMapData(true);
+      //MAP PARAMETER
+      if (mapNameParameter!=null && mapNameParameter!="" ){
+        currentMap = mapNameParameter;
+        firstfetch = true;
+        GetMapData();
+      } else if (storedMap!=null){
+        //If there is no map on the url, get stored map if there is one
+        currentMap = storedMap;
+        firstfetch = true;
+        GetMapData();
+      } else {
+        //this is the first time this person visits kzprofile, just show interstellar as example
+        currentMap = "kz_zxp_interstellar_v2";
+        firstfetch = true;
+        GetMapData();
       }
-
-      //If Enter is pressed on the map input, submitting a new map
-      $( "#mapForm" ).submit(function( event ) {
-        firstfecth = true;
-        ProcessFetchingOptions(false);
-        return false;         //para que no se cargue devuelta la página
-      });
 
       //If the radio group state is changed (Game Type)
       $("input[name='game_mode']").click(function() {
-        ProcessFetchingOptions(false);
+        GetMapData();
       });
 
       //If the radio group state is changed (Run Type)
       $("input[name='run_type']").click(function() {
-        ProcessFetchingOptions(false);
+        GetMapData();
       });
 
       //What happens when i click the Refresh Button on the table
       $("#refreshButton").click(function() {
-        ProcessFetchingOptions(true);
+        GetMapData();
       });
-      
-      //Todos los chequeos para saber el mapa, el game mode y la run type
-      function ProcessFetchingOptions (justRefresh) {
-        if (mapInput.val()!=""){ //antes que nada fijarnos si pusieron algo
-          
-          if (!justRefresh) {
-            mapStage = 0; //si solo apretamos refresh, carga devuelta el mismo stage, pero si cambiar de game_mode o run_type, volve al main map
-          }
-
-          //localStorage.setItem('game_mode', game_mode_radio); //No cambiar las preferencias del jugador, capaz solo está chusmeando los tiempos en otros modos
-          //localStorage.setItem('run_type', run_type_radio);
-
-          if (currentMap!= mapInput.val() || firstfecth){  //detecting if a new map is written in the text input is important for map details refreshing (so we don't have to refresh every time)
-            currentMap = mapInput.val();
-            GetMapData(true);
-          } else {
-            GetMapData(false);
-          }
-        }else {
-          alert("Please, input a map");
-        }
-      }
 
       //Getting the data from the API
-      function GetMapData(new_map){
+      function GetMapData(){
 
         if (runTypeSelector.groupVal() == "true"){
           history.pushState({mapParams: "1"}, "", "?map=" + currentMap + "&mode=" + gameModeSelector.groupVal() + "&run=tp");
@@ -464,7 +586,7 @@
         //Primero que nada borramos todos los datos para mostrar que estamos buscando unos nuevos
         t.clear();
         t.draw();
-        //también vaciamos el dropdown de bonus 
+        //también vaciamos el dropdown de bonus (podria hacerlo en firstfetch en realidad)
         bonusDropdown.html("");
 
         if (mapStage == 0){
@@ -474,11 +596,19 @@
         }
 
         //Refresh map image, name and tier only if we are fetching a new map (different map is detected inside text input)
-        if (new_map){
+        if (firstfetch){
           $("#mapImage").html("");
           $("#mapName").html("");
           $("#mapTier").html("");
           bonusActivator.addClass("d-none");
+
+          $("#mapImageVideo").html('');
+          $("#mapImageVideoThumb").attr('src', '');
+          $("#mapImageFullRes").html('')
+          $("#mapImageFullResThumb").attr('src', '');
+          $("#WorkshopLink").attr('href', '');
+          $("#WorkshopID").html('');
+          emptyModal = true;
         }
 
         if (rankingRequest != null && rankingRequest.readyState < 4) {
@@ -486,37 +616,60 @@
         }
 
         rankingRequest = $.ajax({url: "https://kztimerglobal.com/api/v2.0/records/top?map_name=" + currentMap + "&tickrate=128&modes_list_string=" + gameModeSelector.groupVal() + "&has_teleports=" + runTypeSelector.groupVal() + "&stage=" + mapStage + "&limit=100", dataType: 'json', success: function(result){
-          if (result.length > 0){
-            currentMapID = result[0].map_id;
-            localStorage.setItem('map', currentMap); //recien ahora lo guardamos, antes de aca no sabemos si es valido
-            ShowMapData(result);
-            if (new_map || firstfecth){
-              firstfecth = false;
-              ShowMapInformation();
-            }
-          } else {
-            //si la array vino vacia, no hay data para el "Stage 0".
-            //Debemos verificar si el mapa realmente existe, porque tal vez tenga filtros para los bonuses pero no para el stage 0
-            //Pero si el ajax de la lista de mapas tarda mucho en llegar, no puedo usarlo todavía para verificar la existencia (prevención).
-            //Como esto va a pasar en muy pocas ocasiones, no va a ser un peso para la api hacerle otra consulta
-            rankingRequest = $.ajax({url: "https://kztimerglobal.com/api/v2.0/maps/name/" + currentMap, dataType: 'json', success: function(backupResult){
-              if (backupResult!=null){
-                alert("This map has no data for this Game Mode and Run Type.");
-                currentMapID = backupResult.id;
-                localStorage.setItem('map', currentMap); //recien ahora lo guardamos, antes de aca no sabemos si es valido
-                if (new_map || firstfecth){
-                  firstfecth = false;
-                  ShowMapInformation();
-                }
-              } else {
-                alert("This map is either not global or doesn't exist.");
-              }
-            }});
+
+          currentRankingData = result;
+
+          //if we have map data, that means that it fetched faster than ranking and is waiting for ranking ajax to succeed
+          if (maps != null) {
+            ProcessMapData();
           }
+          //if we don't have map data, it means that ranking data fetched faster, so do nothing. As soon as map data arrives, we'll start analyzing
         }});
       }
 
-      function ShowMapData(arr){
+      function ProcessMapData() {
+
+        if (firstfetch) {
+          currentMapData = null;
+          //get global map information (tier, workshop, validation)
+          for (let i = 0; i < maps.length; i++){
+            if (maps[i].name == currentMap){
+              currentMapData = maps[i];
+              break;
+            }
+          }
+        }
+
+        if (currentRankingData.length > 0){
+          currentMapID = currentRankingData[0].map_id;
+          localStorage.setItem('map', currentMap); //recien ahora lo guardamos, antes de aca no sabemos si es valido
+          ShowMapData();
+          if (firstfetch) {
+            firstfetch = false;
+            ShowMapInformation();
+          }
+        } else { //si vino vacia es porque no hay datos sobre ese mapa pero tal vez tenga runs en otro modo de juego o run type
+          if (firstfetch) {
+            if (currentMapData!=null) {
+              currentMapID = currentMapData.id;
+              localStorage.setItem('map', currentMap); //recien ahora lo guardamos, antes de aca no sabemos si es valido
+              firstfetch = false;
+              ShowMapInformation();
+              alert("This map has 0 runs in this stage, game mode and run type.");
+            } else {
+              alert("This map is either not global or doesn't exist.");
+            }
+          } else {
+            alert("This map has 0 runs in this stage, game mode and run type.");
+          }
+        }
+      }
+
+      function ShowMapData(){
+
+        GetChartData ();
+
+        let arr = currentRankingData;
 
         for (let i = 0; i < arr.length; i++) {
           
@@ -558,12 +711,44 @@
         $("#mapImage").html('<a data-toggle="modal" data-target="#mapImageModal"><img class="img-fluid" src="https://raw.githubusercontent.com/KZGlobalTeam/map-images/public/webp/' + currentMap + `.webp" onerror='this.src="img/kz.png"' id="` + currentMap + `"></a>`);
         
         //TIER
-        for (let i = 0; i < maps.length; i++){
-          if (maps[i].name == currentMap){
-            $("#mapTier").html('<span class="' + TIER[maps[i].difficulty].replace(/ /g, "-") + '">' + TIER[maps[i].difficulty] + '</span>');
-            break;
-          }
+        if (currentMapData!=null) {
+          $("#mapTier").html('<span class="' + TIER[currentMapData.difficulty].replace(/ /g, "-") + '">' + TIER[currentMapData.difficulty] + '</span>');
+        } else {
+          $("#mapTier").html('<span style="color:grey">NOT GLOBAL</span>');
         }
+      }
+
+      function GetChartData () {
+
+        if (WRsRequest != null && WRsRequest.readyState < 4) {
+          WRsRequest.abort();
+        }
+        
+        WRsRequest = $.ajax({url: "https://kztimerglobal.com/api/v2.0/records/top/recent?map_name=" + currentMap + "&tickrate=128&modes_list_string=" + gameModeSelector.groupVal() + "&has_teleports=" + runTypeSelector.groupVal() + "&stage=" + mapStage + "&place_top_at_least=1" , dataType: 'json', success: function(result){
+
+          currentWRsData = result;
+
+          WRsChart.data.datasets[0].players = [];
+          WRsChart.data.datasets[0].data = [];
+          WRsChart.data.datasets[1].players = [];
+          WRsChart.data.datasets[1].data = [];
+
+          for (let i = 0; i < currentWRsData.length; i++) {
+            if (i == 0) {
+              WRsChart.data.datasets[1].data.push({t: moment(), y: currentWRsData[i].time});
+              WRsChart.data.datasets[1].players.push("Still standing");
+              
+              WRsChart.data.datasets[1].data.push({t: moment(currentWRsData[i].updated_on), y: currentWRsData[i].time});
+              WRsChart.data.datasets[1].players.push(currentWRsData[i].player_name);
+            }
+            WRsChart.data.datasets[0].data.push({t: moment(currentWRsData[i].updated_on), y: currentWRsData[i].time});
+            WRsChart.data.datasets[0].players.push(currentWRsData[i].player_name);
+          }
+
+          WRsChart.update();
+          
+        }});
+
       }
 
       //If bonus dropdown arrow is clicked
@@ -618,33 +803,67 @@
       //What happens when a bonus is selected
       bonusDropdown.on('click', 'a.dropdown-item', function() {
         mapStage = $(this).attr('id');
-        GetMapData(false);
+        GetMapData();
       });
 
+      //What happens when modal shows up
       $("#mapImageModal").on('show.bs.modal', function(){
-        let imageMapName = event.target.id;
-        let videoURL;
-        let videoThumb;
-        let workshopURL;
+        if (emptyModal) {
 
-        $.getJSON( "js/videos.json", function( data ) {
-          videoURL = data[imageMapName].video;
-          videoThumb = "https://img.youtube.com/vi/" + data[imageMapName].video.substring(26, 37) + "/0.jpg";
-          workshopURL = data[imageMapName].workshop;
-
+          let imageMapName = event.target.id;
           $("#mapImageModalTitle").html(imageMapName);
-        
-          $("#mapImageVideo").html('<iframe class="embed-responsive-item" src="' + videoURL + '"></iframe>');
-          $("#mapImageVideoThumb").attr('src', videoThumb);
-          
+
+          //IMAGE
           $("#mapImageFullRes").html('<img class="img-fluid" src="https://raw.githubusercontent.com/KZGlobalTeam/map-images/public/images/' + imageMapName + `.jpg" onerror='this.src="img/kz.png"'>`)
           $("#mapImageFullResThumb").attr('src', 'https://raw.githubusercontent.com/KZGlobalTeam/map-images/public/webp/' + imageMapName + '.webp');
 
-          $("#WorkshopLink").attr('href', workshopURL);
-          $("#WorkshopID").html(workshopURL.substring(55));
+          //WORKSHOP
+          let workshopURL;
+          if (currentMapData!=null) { //si es global...
+            workshopURL = currentMapData.workshop_url;
+            if (workshopURL != "") {
+              $("#WorkshopLink").attr('href', workshopURL);
+              $("#WorkshopID").html(workshopURL.substring(55));
+            } else {
+              $("#WorkshopLink").attr('href', '');
+              $("#WorkshopID").html('The url is missing from the api. Please report this issue.');
+            }
+          } else {
+            $("#WorkshopLink").attr('href', '');
+            $("#WorkshopID").html('This map is not global.');
+          }
 
-        });
+          //VIDEO
+          let videoURL;
+          let videoThumb;
 
+          $.getJSON( "js/videos.json", function( data ) {
+
+            if (data[imageMapName] != null) {
+              videoURL = data[imageMapName];
+              videoThumb = "https://img.youtube.com/vi/" + videoURL.substring(26, 37) + "/0.jpg";
+              $("#mapImageVideo").html('<iframe class="embed-responsive-item" src="' + videoURL + '"></iframe>');
+              $("#mapImageVideoThumb").attr('src', videoThumb);
+              $("#mapImageCarousel").carousel(0);
+            } else {
+              $("#mapImageVideo").html(`<div class="embed-responsive-item d-flex align-items-center justify-content-center">
+                                          <div>
+                                            <h1>KZ Profile</h1>
+                                            <p>There is currently no youtube video for this map.</p>
+                                            <p>If you have one, you can contribute to the site by submitting the link <a href="https://forms.gle/FMgWkKjBc53HDpkf8" target="_blank"><u>here</u></a>.</p>
+                                            <p><img src="img/YTError.png"></p>
+                                          </div>
+                                        </div>`);
+              $("#mapImageVideoThumb").attr('src', 'img/kz.png');
+              //if there is no video, just show the image
+              $("#mapImageCarousel").carousel(1);
+            }
+
+            //a esta altura terminamos de procesar todo lo necesario para el modal, ya no esta vacio
+            emptyModal = false;
+
+          });
+        }
       });
 
       //sinconizar la search box con la tabla

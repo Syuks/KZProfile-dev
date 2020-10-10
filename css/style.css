@@ -149,11 +149,7 @@ a{
     color: white;
 }
 
-.steamid-input::placeholder {
-    opacity: 0.4 !important;
-}
-
-.map-input::placeholder {
+.multi-purpose-input::placeholder {
     opacity: 0.4 !important;
 }
 
@@ -212,6 +208,14 @@ input:-webkit-autofill:active {
 
 .navbar .dropdown-menu a:not(.active) {
     color: white;
+}
+
+.navbar .dropdown-menu {
+    margin-top: 0.125rem;
+}
+
+a.waves-effect, a.waves-light {
+    display: block;
 }
 
 /*http://ianlunn.github.io/Hover/*/
@@ -277,7 +281,6 @@ animation: rainbow 5s ease infinite;
 
 .card, .card-body, .card-img{
     border-radius:0.5rem !important;
-    background-color: black;
 }
 
 .medal800sCount {
@@ -448,6 +451,8 @@ animation: rainbow 5s ease infinite;
 
 #mapImageCarousel .carousel-indicators li.active img {
     opacity: 1;
+    border-style: solid;
+    border-width: 1px;
 }
 
 #mapImageCarousel .carousel-indicators li.active:hover img {
