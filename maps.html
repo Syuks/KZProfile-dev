@@ -317,6 +317,7 @@
 
       var currentRankingData;
       var currentWRsData;
+      var currentDistributionData;
       var currentMapData = null; //global data from validated maps list
 
       var maps; //Maps JSON data for Tiers and Autocompletes
@@ -329,6 +330,10 @@
       var mapsRequest;
       var recordFiltersRequest;
       var WRsRequest;
+      var DistributionRequest;
+      var currentWR;//for distribution chart
+      var PBRequest;
+      var currentPB;//for distribution chart
 
       //usamos este bool para evitar problemas al cambiar el mode o run apenas carga la página
       var firstfetch = true;
@@ -340,6 +345,7 @@
       var storedGameMode = localStorage.getItem('game_mode');
       var storedRunType = localStorage.getItem('run_type');
       var storedMap = localStorage.getItem('map');
+      var storedSteamData = JSON.parse(localStorage.getItem('steamProfileData')); //just for map distributions
 
       //UI Elements
       var multiPurposeInput = $("#multiPurposeInput");
@@ -407,6 +413,7 @@
           }]
         },
         options: {
+          responsive: true,
           scales: {
             xAxes: [{
               type: 'time'
@@ -414,19 +421,89 @@
             yAxes: [{
               ticks: {
                 callback: function(value, index, values) {
-                  var time = new Date(value * 1000).toISOString().substr(11, 11);
+                  let time = new Date(value * 1000).toISOString().substr(11, 11);
                   return time;
                 }
               }
             }]
           },
           tooltips: {
+            intersect: false,
             callbacks: {
               label: function(tooltipItem, data) {
-                var dataset = data.datasets[tooltipItem.datasetIndex];
-                var index = tooltipItem.index;
-                var time = new Date(tooltipItem.yLabel * 1000).toISOString().substr(11, 11);
+                let dataset = data.datasets[tooltipItem.datasetIndex];
+                let index = tooltipItem.index;
+                let time = new Date(tooltipItem.yLabel * 1000).toISOString().substr(11, 11);
                 return dataset.players[index] + ": " + time;
+              }
+            }
+          }
+        }
+      });
+
+      //Distribution Chart Initialization
+      var DistributionCanvas = document.getElementById("distributionChart").getContext("2d");
+
+      var DistributionChart = new Chart(DistributionCanvas, {
+        type: 'line',
+        data: {
+          label: "Distribution",
+          labels: [],
+          datasets: [
+          {
+            label: 'PB',
+            data: [],
+            backgroundColor: ['rgba(54, 162, 235, .7)'],
+            borderColor: ['rgba(54, 162, 235, .7)'],
+            borderWidth: 2,
+            radius: 4
+          },
+          {
+            label: 'WR',
+            data: [],
+            backgroundColor: ['rgba(255, 206, 86, 0.2)'],
+            borderColor: ['rgba(255, 206, 86, 1)'],
+            borderWidth: 2,
+            radius: 4
+          },
+          {
+            label: 'Survival',
+            //steppedLine: "after",
+            //lineTension: 0,
+            cubicInterpolationMode: 'monotone',
+            data: [],
+            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+            borderColor: 'rgba(255,99,132,1)',
+            borderWidth: 2,
+            radius: 0 //to hide the thousand points in the line
+          }]
+        },
+        options: {
+          responsive: true,
+          hover: { //to show the point in the line while hovering
+            mode: 'index',
+            intersect: false,
+          },
+          scales: {
+            xAxes: [{
+              ticks: {
+                autoskip: true, //automatic removal of overlapping labels
+                callback: function (value, index, values) {
+                  let time = new Date(value * 1000).toISOString().substr(11, 11);
+                  return time;
+                }
+              }
+            }]
+          },
+          legend: {
+            reverse: true
+          },
+          tooltips: {
+            mode: 'index',
+            intersect: false,
+            callbacks: {
+              title: function(tooltipItem, data) {
+                return "Time: " + tooltipItem[0].xLabel;
               }
             }
           }
@@ -642,6 +719,7 @@
 
         if (currentRankingData.length > 0){
           currentMapID = currentRankingData[0].map_id;
+          currentWR = currentRankingData[0].time;
           localStorage.setItem('map', currentMap); //recien ahora lo guardamos, antes de aca no sabemos si es valido
           ShowMapData();
           if (firstfetch) {
@@ -746,6 +824,86 @@
           }
 
           WRsChart.update();
+          
+        }});
+
+        if (DistributionRequest != null && DistributionRequest.readyState < 4) {
+          DistributionRequest.abort();
+        }
+
+        //I'm doing this twice (for bonuses too), make a global var or place values inside html tag
+        let chart_mode_id;
+        switch (gameModeSelector.groupVal()) {
+          case "kz_timer"  : chart_mode_id = 200;break;
+          case "kz_simple" : chart_mode_id = 201;break;
+          case "kz_vanilla": chart_mode_id = 202;break;
+        }
+
+        DistributionRequest = $.ajax({url: "https://kztimerglobal.com/api/v2.0/record_filters/distributions?map_ids=" + currentMapID + "&has_teleports=" + runTypeSelector.groupVal() + "&stage=" + mapStage + "&mode_ids=" +  chart_mode_id, dataType: 'json', success: function(result){
+          
+          currentDistributionData = result;
+
+          DistributionChart.data.datasets[0].data = []; //PB
+          DistributionChart.data.datasets[1].data = []; //WR
+          DistributionChart.data.datasets[2].data = []; //Survival
+          DistributionChart.data.labels = [];
+
+          if (currentDistributionData.length > 0) {
+
+            //SOURCE: https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.burr12.html
+
+            //shape of the curve, parameter c (>0)
+            let c = currentDistributionData[0].c;
+            //shape of the curve, parameter d (>0)
+            let d = currentDistributionData[0].d;
+            //loc represents the location of the curve. It's used to shift x (seconds, time) to where the curve starts (run times start)
+            let loc = currentDistributionData[0].loc;
+            //scale is used to scale the curve (>0)
+            let scale = currentDistributionData[0].scale;
+
+            //hard cap: time limit in seconds (3 hours)
+            let timeLimit = 3 * 60 * 60;
+
+            //x represents time in seconds. will be the x axis, the casing for the distribution curve (>=0)
+            for (x = 0; x < timeLimit; x++) {
+
+              //soft cap, there are 0/almost 0 runs past this "time" (1+(y^c))^-d
+              if(burr12percentile(x, c, d, loc, scale) < 0.1){
+                break;
+              }
+
+              DistributionChart.data.datasets[2].data.push(burr12(x, c, d, loc, scale));
+              DistributionChart.data.labels.push(x);
+            }
+
+            //WR inside distribution chart
+            DistributionChart.data.datasets[1].data[Math.round(currentWR)] = burr12(currentWR, c, d, loc, scale);
+
+            DistributionChart.update(); //update now, if there is a pb, we'll update again when we get it
+
+            //PB inside distribution chart
+            if (storedSteamData != null) { //si inicio sesion
+
+              currentPB = null;
+              
+              if (PBRequest != null && PBRequest.readyState < 4) {
+                PBRequest.abort();
+              }
+
+              PBRequest = $.ajax({url: "https://kztimerglobal.com/api/v2.0/records/top?steamid64=" + storedSteamData.response.players[0].steamid + "&map_id=" + currentMapID + "&tickrate=128&has_teleports=" + runTypeSelector.groupVal() + "&stage=" + mapStage + "&modes_list_string=" +  gameModeSelector.groupVal(), dataType: 'json', success: function(result){
+                if (result.length > 0) {
+                  currentPB = result[0].time;
+                  DistributionChart.data.datasets[0].data[Math.round(currentPB)] = burr12(currentPB, c, d, loc, scale);
+                  DistributionChart.update();
+                }
+              }});
+            }
+
+          } else { //if there is no distribution data yet, show an empty chart
+            DistributionChart.update();
+          }
+
+          
           
         }});
 

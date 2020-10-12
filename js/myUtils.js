@@ -248,3 +248,17 @@ function loadOpenID () {
       'openid.identity=http://specs.openid.net/auth/2.0/identifier_select'
     ;
 }
+
+function burr12 (x, c, d, loc, scale) {
+  //shifting and scaling x accordingly
+  let y = (x - loc) / scale;
+  let fburr12 = ( (c * d * Math.pow(y, c - 1)) / Math.pow(1 + Math.pow(y, c), d + 1) ) / scale;
+  return fburr12;
+}
+
+function burr12percentile (x, c, d, loc, scale) {
+  //shifting and scaling x accordingly
+  let y = (x - loc) / scale;
+  let percentile = Math.pow(1 + Math.pow(y, c),-d);
+  return percentile;
+}
