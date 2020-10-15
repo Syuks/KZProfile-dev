@@ -123,35 +123,38 @@
       <!--Mode Chooser-->
 
       <!--TOP 3-->
-      <div class="row" style="margin-top: 60px;">
+      <div class="row" style="margin-top: 50px;">
         
         <div class="col-lg text-center" style="padding-top: 10px;">
-          <a href="/">
-            <img class="img-fluid rounded-circle" style="border: 2px solid #d7d7d7; height: 170px;" src="https://steamcdn-a.akamaihd.net/steamcommunity/public/images/avatars/95/954a48291c9b3f805f9e5792905ae52ef3a208d8_full.jpg">
+          <h2 style="color:#d7d7d7">#2</h2>
+          <a id="2ndLink" href="">
+            <img id="2ndImg" class="img-fluid rounded-circle" style="border: 2px solid #d7d7d7; height: 170px; margin-bottom: 8px;" src="">
           </a>
-          <h2>smieszneznaczki</h2>
-          <p>66</p>
+          <h2 id="2ndName"></h2>
+          <h5 id="2ndWRs"></h5>
         </div>
 
         <div class="col-lg text-center">
-          <a href="/">
-            <img class="img-fluid rounded-circle" style="border: 2px solid #e3ad39; height: 188px;" src="https://steamcdn-a.akamaihd.net/steamcommunity/public/images/avatars/7b/7bd7d3f9ddb9104349f08a6161b45f195cc81734_full.jpg">
+          <h1 style="color:#e3ad39">#1</h1>
+          <a id="1stLink" href="">
+            <img id="1stImg" class="img-fluid rounded-circle" style="border: 2px solid #e3ad39; height: 188px; margin-bottom: 8px;" src="">
           </a>
-          <h1>gwooky</h1>
-          <p>97</p>
+          <h1 id="1stName"></h1>
+          <h5 id="1stWRs"></h5>
         </div>
 
         <div class="col-lg text-center" style="padding-top: 20px;">
-          <a href="/">
-            <img class="img-fluid rounded-circle" style="border: 2px solid #ad8a56; height: 150px;" src="https://steamcdn-a.akamaihd.net/steamcommunity/public/images/avatars/af/af3d82167b46784ed49b0cb62080eba8216389fe_full.jpg">
+          <h3 style="color:#ad8a56">#3</h3>
+          <a id="3rdLink" href="">
+            <img id="3rdImg" class="img-fluid rounded-circle" style="border: 2px solid #ad8a56; height: 150px; margin-bottom: 8px;" src="">
           </a>
-          <h3>ninini ninin,,,,,,</h3>
-          <p>64</p>
+          <h3 id="3rdName"></h3>
+          <h5 id="3rdWRs"></h5>
         </div>
 
       </div>
 
-      <div class="row z-depth-1-half" style="margin-top: 24px;">
+      <div class="row z-depth-1-half" style="margin-top: 40px;">
         <div class="col">
 
           <!-- TABLE HEADER -->
@@ -193,7 +196,7 @@
                     <th class="th-lg">Rating</th>
                     <th class="th-lg">Points</th>
                     <th class="th-lg">Finishes</th>
-                    <th class="th-lg">Avg</th>
+                    <th class="text-center th-lg">Average</th>
                   </tr>
                 </thead>
               </table>
@@ -225,10 +228,12 @@
     //Globals so I can cancel the ajax request as soon as a new one is needed
     var WRsRequest;
     var PlayersRankingRequest;
+    var steamRequest;
     var mapsRequest;
 
     var currentWRsData;
     var currentPlayersRankingData;
+    var currentSteamData;
 
     //Persistent Maps Data for Autocomplete
     var maps;
@@ -365,7 +370,7 @@
         }
       }
 
-      //GetWRsData();
+      GetWRsData();
 
       //If the radio group state is changed (Game Type)
       $("input[name='game_mode']").click(function() {
@@ -398,6 +403,20 @@
         //Primero que nada borramos todos los datos para mostrar que estamos buscando unos nuevos
         t.clear();
         t.draw();
+        $("#1stLink").attr("href", "");
+        $("#1stImg").attr("src", "");
+        $("#1stName").html("");
+        $("#1stWRs").html("");
+
+        $("#2ndLink").attr("href", "");
+        $("#2ndImg").attr("src", "");
+        $("#2ndName").html("");
+        $("#2ndWRs").html("");
+
+        $("#3rdLink").attr("href", "");
+        $("#3rdImg").attr("src", "");
+        $("#3rdName").html("");
+        $("#3rdWRs").html("");
 
         if (WRsRequest != null && WRsRequest.readyState < 4) {
           WRsRequest.abort();  //abort ajax request if another one was requested
@@ -448,6 +467,49 @@
             }
 
             t.draw();
+
+          }});
+
+          SteamProfilesString = "https://kzprofile.kreedz.top/api/v1/steam?steamids=" + currentWRsData[0].steamid64 + "," + currentWRsData[1].steamid64 + "," + currentWRsData[2].steamid64;
+
+          if (steamRequest != null && steamRequest.readyState < 4) {
+            steamRequest.abort();
+          }
+
+          steamRequest = $.ajax({url: SteamProfilesString, dataType: 'json', success: function(response){
+
+            currentSteamData = response;
+
+            //the steam response does not come back in order!
+
+            var firstPlayerSteam;
+            var secondPlayerSteam;
+            var thirdPlayerSteam;
+
+            for (let i = 0; i < currentSteamData.response.players.length; i++) {
+              if (currentSteamData.response.players[i].steamid == currentWRsData[0].steamid64) {
+                firstPlayerSteam = currentSteamData.response.players[i];
+              } else if (currentSteamData.response.players[i].steamid == currentWRsData[1].steamid64) {
+                secondPlayerSteam = currentSteamData.response.players[i];
+              } else {
+                thirdPlayerSteam = currentSteamData.response.players[i];
+              }
+            }
+            
+            $("#1stLink").attr("href", "/?steamid=" + currentWRsData[0].steam_id + "&mode=" + gameModeSelector.groupVal() + runTypeParameterString);
+            $("#1stImg").attr("src", firstPlayerSteam.avatarfull);
+            $("#1stName").html('<a href="/?steamid=' + currentWRsData[0].steam_id + '&mode=' + gameModeSelector.groupVal() + runTypeParameterString + '">' + currentWRsData[0].player_name + '</a>');
+            $("#1stWRs").html(currentWRsData[0].count);
+
+            $("#2ndLink").attr("href", "/?steamid=" + currentWRsData[1].steam_id + "&mode=" + gameModeSelector.groupVal() + runTypeParameterString);
+            $("#2ndImg").attr("src", secondPlayerSteam.avatarfull);
+            $("#2ndName").html('<a href="/?steamid=' + currentWRsData[1].steam_id + '&mode=' + gameModeSelector.groupVal() + runTypeParameterString + '">' + currentWRsData[1].player_name + '</a>');
+            $("#2ndWRs").html(currentWRsData[1].count);
+
+            $("#3rdLink").attr("href", "/?steamid=" + currentWRsData[2].steam_id + "&mode=" + gameModeSelector.groupVal() + runTypeParameterString);
+            $("#3rdImg").attr("src", thirdPlayerSteam.avatarfull);
+            $("#3rdName").html('<a href="/?steamid=' + currentWRsData[2].steam_id + '&mode=' + gameModeSelector.groupVal() + runTypeParameterString + '">' + currentWRsData[2].player_name + '</a>');
+            $("#3rdWRs").html(currentWRsData[2].count);
 
           }});
 

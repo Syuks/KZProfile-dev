@@ -243,18 +243,20 @@
       
       //What happens when a a new player is searched
       $("#playerNameForm").submit(function( event ) {
-        let buttonPressed = $(document.activeElement).val();
-        if (playerInput.val()!=currentPlayer) {
-          if (buttonPressed == "feelLuckyButton") {
-            currentPlayer = playerInput.val();
-            GetLuckyPlayer();
+        if (playerInput.val() != "") {
+          let buttonPressed = $(document.activeElement).val();
+          if (playerInput.val()!=currentPlayer) {
+            if (buttonPressed == "feelLuckyButton") {
+              currentPlayer = playerInput.val();
+              GetLuckyPlayer();
+            } else {
+              currentPlayer = playerInput.val();
+              GetPlayers();
+            }
           } else {
-            currentPlayer = playerInput.val();
-            GetPlayers();
+            playerInput.val("");
+            playerInput.focus();
           }
-        } else {
-          playerInput.val("");
-          playerInput.focus();
         }
         return false;
       });
@@ -288,7 +290,9 @@
               steamQueryString = "https://kzprofile.kreedz.top/api/v1/steam?steamids=";
 
               for (let i = 0; i < apiData.length; i++) {
-                steamQueryString += (apiData[i].steamid64 + ",");
+                if (apiData[i].is_banned == false) { //la API se rompe cuando pongo en los parametros del url is_banned=false asi que hago el checkeo aca
+                  steamQueryString += (apiData[i].steamid64 + ",");
+                }
               }
 
               steamRequest = $.ajax({url: steamQueryString, dataType: 'json', success: function(steamResult){
