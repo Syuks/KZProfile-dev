@@ -219,13 +219,6 @@
 
     var timezoneOffset = new Date().getTimezoneOffset();
 
-    //jquery extension for cleaner radio group value retrieving
-    jQuery.fn.extend({
-      groupVal: function() {
-          return $(this).filter(':checked').val();
-      }
-    });
-
     //LOGIN LOGIC
     var storedSteamData = JSON.parse(localStorage.getItem('steamProfileData'));
     if (storedSteamData!=null) {
@@ -419,13 +412,13 @@
                   </div>
                   <div class="row align-items-end" style="height: 50%;">
                     <div class="col-3" style="margin-bottom:5px">
-                      <a href="/?steamid=` + currentWRRecentData[runIndex].steam_id + `" style="z-index: 1;position: relative;">
+                      <a href="/?steamid=` + currentWRRecentData[runIndex].steam_id + `&mode=` + gameModeSelector.groupVal() + `&run=pro` + `" style="z-index: 1;position: relative;">
                         <img class="img-fluid rounded-circle ` + proSteamid64s[i].steam64 + `" src="img/kz.gif">
                       </a>
                     </div>
                     <div class="col-9" style="padding-left: 0px;">
                       <div><a style="font-size:20px;z-index: 1;position: relative;" href="maps.html?map=` + currentWRRecentData[runIndex].map_name + `&mode=` + gameModeSelector.groupVal() + `&run=pro">` + currentWRRecentData[runIndex].map_name + `</a></div>
-                      <div><a style="font-size:15px;z-index: 1;position: relative;" href="/?steamid=` + currentWRRecentData[runIndex].steam_id + `">` + currentWRRecentData[runIndex].player_name + `</a></div>
+                      <div><a style="font-size:15px;z-index: 1;position: relative;" href="/?steamid=` + currentWRRecentData[runIndex].steam_id + `&mode=` + gameModeSelector.groupVal() + `&run=pro` + `">` + currentWRRecentData[runIndex].player_name + `</a></div>
                       <div style="font-size:15px; opacity: 0.6;">` + map_time + ` • ` + humanized_time_span(new Date (time_passed)) + `</div>
                     </div>
                   </div>
@@ -458,13 +451,13 @@
                   <a href="maps.html?map=` + currentWRRecentData[runIndex].map_name + `&mode=` + gameModeSelector.groupVal() + `&run=tp" class="stretched-link"></a>
                   <div class="row align-items-end" style="height: 100%;">
                     <div class="col-3" style="margin-bottom:5px">
-                      <a href="/?steamid=` + currentWRRecentData[runIndex].steam_id + `" style="z-index: 1;position: relative;">
+                      <a href="/?steamid=` + currentWRRecentData[runIndex].steam_id + `&mode=` + gameModeSelector.groupVal() + `&run=tp` + `" style="z-index: 1;position: relative;">
                         <img class="img-fluid rounded-circle ` + tpSteamid64s[i].steam64 + `" src="img/kz.gif">
                       </a>
                     </div>
                     <div class="col-9" style="padding-left: 0px;">
                       <div><a style="font-size:20px;z-index: 1;position: relative;" href="maps.html?map=` + currentWRRecentData[runIndex].map_name + `&mode=` + gameModeSelector.groupVal() + `&run=tp">` + currentWRRecentData[runIndex].map_name + `</a></div>
-                      <div><a style="font-size:15px;z-index: 1;position: relative;" href="/?steamid=` + currentWRRecentData[runIndex].steam_id + `">` + currentWRRecentData[runIndex].player_name + `</a></div>
+                      <div><a style="font-size:15px;z-index: 1;position: relative;" href="/?steamid=` + currentWRRecentData[runIndex].steam_id + `&mode=` + gameModeSelector.groupVal() + `&run=tp` + `">` + currentWRRecentData[runIndex].player_name + `</a></div>
                       <div style="font-size:15px; opacity: 0.6;">` + map_time + ` • ` + humanized_time_span(new Date (time_passed)) + `</div>
                     </div>
                   </div>

@@ -489,14 +489,7 @@
 
     var currentSteamID;
     var tableState = 1;
-    var currentJumptype;
-
-    //jquery extension for cleaner radio group value retrieving
-    jQuery.fn.extend({
-      groupVal: function() {
-          return $(this).filter(':checked').val();
-      }
-    });
+    var currentJumptype = "Longjump";
 
     //LOGIN LOGIC
     var storedSteamData = JSON.parse(localStorage.getItem('steamProfileData'));
@@ -855,8 +848,14 @@
       //Getting the data from the API
       function GetPlayerData(){
 
-        localStorage.setItem('game_mode', gameModeSelector.groupVal());
-        localStorage.setItem('run_type', runTypeSelector.groupVal());
+        if (currentSteamID == "" || currentSteamID == null) {
+          return;
+        }
+
+        if (currentSteamID == storedSteamData.response.players[0].steamid) {
+          localStorage.setItem('game_mode', gameModeSelector.groupVal());
+          localStorage.setItem('run_type', runTypeSelector.groupVal());
+        }
 
         if (runTypeSelector.groupVal() == "true"){
           history.pushState({mapParams: "1"}, "", "?steamid=" + GetSteam32(currentSteamID) + "&mode=" + gameModeSelector.groupVal() + "&run=tp");
@@ -1288,6 +1287,10 @@
 
       function GetJumpstatsData () {
 
+        if (currentSteamID == "" || currentSteamID == null) {
+          return;
+        }
+
         jt.clear();
         jt.draw();
 
@@ -1357,7 +1360,7 @@
           }, 2000);
 
         } else {
-          alert("Please input a SteamID first.")
+          alert("Please input a SteamID first.");
         }
       });
 

@@ -165,7 +165,7 @@
             </div>
             <!-- 2. Table state changer -->
             <div class="col d-flex align-items-center justify-content-center">
-              <a id="table-state-left" style="z-index: 1;">
+              <a id="table-state-left" style="z-index: 1;" class="invisible">
                 <i class="fas fa-angle-left"></i>
               </a>
               <div class="text-center" id="table-state-title" style="min-width: 150px;">
@@ -184,6 +184,7 @@
             </div>
           </div>
           <div class="row">
+            <!--Table-->
             <div class="table-responsive">
               <table id="MapRanking" class="table-sm table-borderless table-hover table-dark text-center text-nowrap">
                 <thead class="z-depth-1">
@@ -199,8 +200,11 @@
                 </thead>
               </table>
             </div>
-            <canvas id="WRsChart"></canvas>
-            <canvas id="distributionChart"></canvas>
+            <!--Statistics-->
+            <div id="ChartsContainer" class="col d-none w-100 text-center">
+              <canvas id="WRsChart" style="margin-top: 20px;"></canvas>
+              <canvas id="distributionChart" style="margin-top: 20px;"></canvas>
+            </div>
           </div>
         </div>
       </div>
@@ -298,17 +302,13 @@
       1: "VERY EASY",
     }
 
-    //jquery extension for cleaner radio group value retrieving
-    jQuery.fn.extend({
-      groupVal: function() {
-          return $(this).filter(':checked').val();
-      }
-    });
+    var loggedSteamID32 = ""; //to highlight personal run in table
 
     //LOGIN LOGIC
     var storedSteamData = JSON.parse(localStorage.getItem('steamProfileData'));
     if (storedSteamData!=null) {
       $("#userLogin").html('<div class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><img class="rounded-circle" src="' + storedSteamData.response.players[0].avatar + '"></a><div class="dropdown-menu"><a class="dropdown-item waves-effect waves-light" href="extras/steam.html?logout=true">Logout</a></div></div>');
+      loggedSteamID32 = GetSteam32(storedSteamData.response.players[0].steamid);
     } else {
       $("#userLogin").html('<a onclick="loadOpenID();"><img src="https://community.cloudflare.steamstatic.com/public/images/signinthroughsteam/sits_01.png"></a>');
     }
@@ -331,15 +331,20 @@
       var recordFiltersRequest;
       var WRsRequest;
       var DistributionRequest;
+      var WRBackupRequest; //for distribution chart
       var currentWR;//for distribution chart
       var PBRequest;
       var currentPB;//for distribution chart
 
       //usamos este bool para evitar problemas al cambiar el mode o run apenas carga la página
       var firstfetch = true;
+      
+      var tableState = 0;
 
       //bool for checking if we have already loaded the modal content
       var emptyModal = true;
+      //bool for checking if we have already loaded the statistics
+      var emptyStats = true;
 
       //Local Storage
       var storedGameMode = localStorage.getItem('game_mode');
@@ -376,8 +381,10 @@
                     } else if (data[3] >= 700) {
                       $(row).find('td:eq(3)').css('color', '#4abc8d');
                     }
-                    if(data[1].includes(localStorage.getItem('steamid'))){
-                      $(row).css('background-color', '#2E2E2E');
+                    if (loggedSteamID32!="") { //if logged in
+                      if(data[1].includes(loggedSteamID32)){
+                        $(row).css('background-color', '#2E2E2E');
+                      }
                     }
                   },
                   "dom": 'rt' //con esto elijo que partes de la datatable aparezcan: default: 'lfrtip' (length slector, filter input, ¿procesing element?, table, information, pagination)
@@ -651,6 +658,39 @@
         GetMapData();
       });
 
+      //If the right arrow on table is pressed (Table State)
+      $("#table-state-right").click(function() {
+        //Ranking -> Statistics
+        if (tableState == 0) { //redundant but safe
+          tableState = 1;
+          $("#table-state-title").html("Statistics");
+          $("#table-state-right").addClass("invisible");
+          $("#table-state-left").removeClass("invisible");
+          $("#MapRanking").addClass("d-none");
+          $("#ChartsContainer").removeClass("d-none");
+          if (emptyStats) {
+            GetChartData();
+          }
+        }
+      });
+
+      //If the left arrow on table is pressed (Table State)
+      $("#table-state-left").click(function() {
+        //Statistics -> Ranking
+        if (tableState == 1) { //redundant but safe
+          tableState = 0;
+          if (mapStage == 0){
+            $("#table-state-title").html("Map Ranking");
+          } else {
+            $("#table-state-title").html("Bonus " + mapStage + " Ranking");
+          }
+          $("#table-state-left").addClass("invisible");
+          $("#table-state-right").removeClass("invisible");
+          $("#ChartsContainer").addClass("d-none");
+          $("#MapRanking").removeClass("d-none");
+        }
+      });
+
       //Getting the data from the API
       function GetMapData(){
 
@@ -665,11 +705,18 @@
         t.draw();
         //también vaciamos el dropdown de bonus (podria hacerlo en firstfetch en realidad)
         bonusDropdown.html("");
+        //y el wr asi luego sabemos si ya lo tenemos o no (ver distribution chart)
+        currentWR = null;
+        emptyStats = true;
 
-        if (mapStage == 0){
-          $("#table-state-title").html("Map Ranking");
-        } else {
-          $("#table-state-title").html("Bonus " + mapStage + " Ranking");
+        if (tableState == 0) {
+          if (mapStage == 0){
+            $("#table-state-title").html("Map Ranking");
+          } else {
+            $("#table-state-title").html("Bonus " + mapStage + " Ranking");
+          }
+        } else if (tableState == 1) {
+          $("#table-state-title").html("Statistics");
         }
 
         //Refresh map image, name and tier only if we are fetching a new map (different map is detected inside text input)
@@ -726,6 +773,9 @@
             firstfetch = false;
             ShowMapInformation();
           }
+          if (tableState== 1) {
+            GetChartData();
+          }
         } else { //si vino vacia es porque no hay datos sobre ese mapa pero tal vez tenga runs en otro modo de juego o run type
           if (firstfetch) {
             if (currentMapData!=null) {
@@ -733,19 +783,21 @@
               localStorage.setItem('map', currentMap); //recien ahora lo guardamos, antes de aca no sabemos si es valido
               firstfetch = false;
               ShowMapInformation();
+              EmptyWRsChart();
+              EmptyDistributionChart();
               alert("This map has 0 runs in this stage, game mode and run type.");
             } else {
               alert("This map is either not global or doesn't exist.");
             }
           } else {
+            EmptyWRsChart();
+            EmptyDistributionChart();
             alert("This map has 0 runs in this stage, game mode and run type.");
           }
         }
       }
 
       function ShowMapData(){
-
-        GetChartData ();
 
         let arr = currentRankingData;
 
@@ -798,115 +850,166 @@
 
       function GetChartData () {
 
+        //------------------------WR CHART------------------------//
+
         if (WRsRequest != null && WRsRequest.readyState < 4) {
           WRsRequest.abort();
         }
         
-        WRsRequest = $.ajax({url: "https://kztimerglobal.com/api/v2.0/records/top/recent?map_name=" + currentMap + "&tickrate=128&modes_list_string=" + gameModeSelector.groupVal() + "&has_teleports=" + runTypeSelector.groupVal() + "&stage=" + mapStage + "&place_top_at_least=1" , dataType: 'json', success: function(result){
+        WRsRequest = $.ajax({url: "https://kztimerglobal.com/api/v2.0/records/top/recent?map_name=" + currentMap + "&tickrate=128&modes_list_string=" + gameModeSelector.groupVal() + "&has_teleports=" + runTypeSelector.groupVal() + "&stage=" + mapStage + "&place_top_at_least=1" , dataType: 'json',
+          success: function(result){
 
-          currentWRsData = result;
+            currentWRsData = result;
 
-          WRsChart.data.datasets[0].players = [];
-          WRsChart.data.datasets[0].data = [];
-          WRsChart.data.datasets[1].players = [];
-          WRsChart.data.datasets[1].data = [];
+            if (currentWRsData.length > 0) {
 
-          for (let i = 0; i < currentWRsData.length; i++) {
-            if (i == 0) {
-              WRsChart.data.datasets[1].data.push({t: moment(), y: currentWRsData[i].time});
-              WRsChart.data.datasets[1].players.push("Still standing");
-              
-              WRsChart.data.datasets[1].data.push({t: moment(currentWRsData[i].updated_on), y: currentWRsData[i].time});
-              WRsChart.data.datasets[1].players.push(currentWRsData[i].player_name);
+              //WR history
+              WRsChart.data.datasets[0].players = [];
+              WRsChart.data.datasets[0].data = [];
+              //WR current
+              WRsChart.data.datasets[1].players = [];
+              WRsChart.data.datasets[1].data = [];
+
+              for (let i = 0; i < currentWRsData.length; i++) {
+                if (i == 0) {
+                  WRsChart.data.datasets[1].data.push({t: moment(), y: currentWRsData[i].time});
+                  WRsChart.data.datasets[1].players.push("Still standing");
+                  
+                  WRsChart.data.datasets[1].data.push({t: moment(currentWRsData[i].updated_on), y: currentWRsData[i].time});
+                  WRsChart.data.datasets[1].players.push(currentWRsData[i].player_name);
+                }
+                WRsChart.data.datasets[0].data.push({t: moment(currentWRsData[i].updated_on), y: currentWRsData[i].time});
+                WRsChart.data.datasets[0].players.push(currentWRsData[i].player_name);
+              }
+              emptyStats = false;
+              WRsChart.update();
+            } else {
+              EmptyWRsChart(); //if no wrs, show empty graph
             }
-            WRsChart.data.datasets[0].data.push({t: moment(currentWRsData[i].updated_on), y: currentWRsData[i].time});
-            WRsChart.data.datasets[0].players.push(currentWRsData[i].player_name);
+          },
+          error: function(){
+            EmptyWRsChart(); //if no wrs, show empty graph
           }
+        });
 
-          WRsChart.update();
-          
-        }});
+        //------------------------DISTRIBUTION CHART------------------------//
+
+        let chart_mode_id = gameModeID(gameModeSelector);
 
         if (DistributionRequest != null && DistributionRequest.readyState < 4) {
           DistributionRequest.abort();
         }
 
-        //I'm doing this twice (for bonuses too), make a global var or place values inside html tag
-        let chart_mode_id;
-        switch (gameModeSelector.groupVal()) {
-          case "kz_timer"  : chart_mode_id = 200;break;
-          case "kz_simple" : chart_mode_id = 201;break;
-          case "kz_vanilla": chart_mode_id = 202;break;
-        }
-
-        DistributionRequest = $.ajax({url: "https://kztimerglobal.com/api/v2.0/record_filters/distributions?map_ids=" + currentMapID + "&has_teleports=" + runTypeSelector.groupVal() + "&stage=" + mapStage + "&mode_ids=" +  chart_mode_id, dataType: 'json', success: function(result){
+        DistributionRequest = $.ajax({url: "https://kztimerglobal.com/api/v2.0/record_filters/distributions?map_ids=" + currentMapID + "&has_teleports=" + runTypeSelector.groupVal() + "&stage=" + mapStage + "&mode_ids=" +  chart_mode_id, dataType: 'json',
+          success: function(result){
           
-          currentDistributionData = result;
+            currentDistributionData = result;
 
-          DistributionChart.data.datasets[0].data = []; //PB
-          DistributionChart.data.datasets[1].data = []; //WR
-          DistributionChart.data.datasets[2].data = []; //Survival
-          DistributionChart.data.labels = [];
+            if (currentDistributionData.length > 0) {
 
-          if (currentDistributionData.length > 0) {
+              DistributionChart.data.datasets[0].data = []; //PB
+              DistributionChart.data.datasets[1].data = []; //WR
+              DistributionChart.data.datasets[2].data = []; //Survival
+              DistributionChart.data.labels = [];
 
-            //SOURCE: https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.burr12.html
+              //SOURCE: https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.burr12.html
 
-            //shape of the curve, parameter c (>0)
-            let c = currentDistributionData[0].c;
-            //shape of the curve, parameter d (>0)
-            let d = currentDistributionData[0].d;
-            //loc represents the location of the curve. It's used to shift x (seconds, time) to where the curve starts (run times start)
-            let loc = currentDistributionData[0].loc;
-            //scale is used to scale the curve (>0)
-            let scale = currentDistributionData[0].scale;
+              //shape of the curve, parameter c (>0)
+              let c = currentDistributionData[0].c;
+              //shape of the curve, parameter d (>0)
+              let d = currentDistributionData[0].d;
+              //loc represents the location of the curve. It's used to shift x (seconds, time) to where the curve starts (run times start)
+              let loc = currentDistributionData[0].loc;
+              //scale is used to scale the curve (>0)
+              let scale = currentDistributionData[0].scale;
 
-            //hard cap: time limit in seconds (3 hours)
-            let timeLimit = 3 * 60 * 60;
+              //hard cap: time limit in seconds (3 hours)
+              let timeLimit = 3 * 60 * 60;
 
-            //x represents time in seconds. will be the x axis, the casing for the distribution curve (>=0)
-            for (x = 0; x < timeLimit; x++) {
+              //x represents time in seconds. will be the x axis, the casing for the distribution curve (>=0)
+              for (let x = 0; x < timeLimit; x++) {
 
-              //soft cap, there are 0/almost 0 runs past this "time" (1+(y^c))^-d
-              if(burr12percentile(x, c, d, loc, scale) < 0.1){
-                break;
-              }
-
-              DistributionChart.data.datasets[2].data.push(burr12(x, c, d, loc, scale));
-              DistributionChart.data.labels.push(x);
-            }
-
-            //WR inside distribution chart
-            DistributionChart.data.datasets[1].data[Math.round(currentWR)] = burr12(currentWR, c, d, loc, scale);
-
-            DistributionChart.update(); //update now, if there is a pb, we'll update again when we get it
-
-            //PB inside distribution chart
-            if (storedSteamData != null) { //si inicio sesion
-
-              currentPB = null;
-              
-              if (PBRequest != null && PBRequest.readyState < 4) {
-                PBRequest.abort();
-              }
-
-              PBRequest = $.ajax({url: "https://kztimerglobal.com/api/v2.0/records/top?steamid64=" + storedSteamData.response.players[0].steamid + "&map_id=" + currentMapID + "&tickrate=128&has_teleports=" + runTypeSelector.groupVal() + "&stage=" + mapStage + "&modes_list_string=" +  gameModeSelector.groupVal(), dataType: 'json', success: function(result){
-                if (result.length > 0) {
-                  currentPB = result[0].time;
-                  DistributionChart.data.datasets[0].data[Math.round(currentPB)] = burr12(currentPB, c, d, loc, scale);
-                  DistributionChart.update();
+                //soft cap, there are 0/almost 0 runs past this "time" (1+(y^c))^-d
+                if(burr12percentile(x, c, d, loc, scale) < 0.1){
+                  break;
                 }
-              }});
+
+                DistributionChart.data.datasets[2].data.push(burr12(x, c, d, loc, scale));
+                DistributionChart.data.labels.push(x);
+              }
+              //wait for wr to draw the chart
+
+              //WR inside distribution chart.
+              //If ranking data has not arrieved yet, then we don't know the wr. If that's the case, fetch it (only happens when pressing table arrow before loading current ranking data)
+              if (currentWR == null) {
+
+                if (WRBackupRequest != null && WRBackupRequest.readyState < 4) {
+                  WRBackupRequest.abort();
+                }
+
+                WRBackupRequest = $.ajax({url: "https://kztimerglobal.com/api/v2.0/records/top?map_name=" + currentMap + "&tickrate=128&stage=" + mapStage + "&modes_list_string=" + gameModeSelector.groupVal() + "&has_teleports=" + runTypeSelector.groupVal() + "&limit=1", dataType: 'json', success: function(result){
+                  if (result.length > 0) {
+                    currentWR = result[0].time;
+                    DistributionChart.data.datasets[1].data[Math.round(currentWR)] = burr12(currentWR, c, d, loc, scale);
+                    DistributionChart.update(); //update now, if there is a pb, we'll update again when we get it
+                  } //if it's 0 then there are no wrs, do nothing, really weird
+                }});
+
+              } else {
+                DistributionChart.data.datasets[1].data[Math.round(currentWR)] = burr12(currentWR, c, d, loc, scale);
+                DistributionChart.update(); //update now, if there is a pb, we'll update again when we get it
+              }
+
+              //PB inside distribution chart
+              if (storedSteamData != null) { //si inicio sesion
+
+                currentPB = null;
+                
+                if (PBRequest != null && PBRequest.readyState < 4) {
+                  PBRequest.abort();
+                }
+
+                PBRequest = $.ajax({url: "https://kztimerglobal.com/api/v2.0/records/top?steamid64=" + storedSteamData.response.players[0].steamid + "&map_id=" + currentMapID + "&tickrate=128&has_teleports=" + runTypeSelector.groupVal() + "&stage=" + mapStage + "&modes_list_string=" +  gameModeSelector.groupVal(), dataType: 'json', success: function(result){
+                  if (result.length > 0) {
+                    currentPB = result[0].time;
+                    DistributionChart.data.datasets[0].data[Math.round(currentPB)] = burr12(currentPB, c, d, loc, scale);
+                    DistributionChart.update();
+                  } //if it's 0 then do nothing, you have no pb in this map
+                }});
+              }
+
+            } else {
+              EmptyDistributionChart(); //if there is no distribution data yet, show an empty chart
             }
-
-          } else { //if there is no distribution data yet, show an empty chart
-            DistributionChart.update();
+          },
+          error: function(){
+            EmptyDistributionChart(); //on error, show empty graph
           }
+        });
+      }
 
-          
-          
-        }});
+      function EmptyWRsChart() {
 
+        emptyStats = false;
+
+        //WR history
+        WRsChart.data.datasets[0].players = [];
+        WRsChart.data.datasets[0].data = [];
+        //WR current
+        WRsChart.data.datasets[1].players = [];
+        WRsChart.data.datasets[1].data = [];
+
+        WRsChart.update();
+      }
+
+      function EmptyDistributionChart () {
+        
+        DistributionChart.data.datasets[0].data = []; //PB
+        DistributionChart.data.datasets[1].data = []; //WR
+        DistributionChart.data.datasets[2].data = []; //Survival
+        DistributionChart.data.labels = [];
+
+        DistributionChart.update();
       }
 
       //If bonus dropdown arrow is clicked
@@ -926,12 +1029,8 @@
       }
 
       function ShowRecordFilters (filters) {
-        let bonus_mode_id;
-        switch (gameModeSelector.groupVal()) {
-          case "kz_timer"  : bonus_mode_id = 200;break;
-          case "kz_simple" : bonus_mode_id = 201;break;
-          case "kz_vanilla": bonus_mode_id = 202;break;
-        }
+        let bonus_mode_id = gameModeID(gameModeSelector);
+        
         let bonus_has_teleports = Boolean(runTypeSelector.groupVal());
 
         //Although this method runs the for loop again, it's much simpler to code and forward compatible. The for loop is not expensive.

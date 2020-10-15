@@ -262,3 +262,20 @@ function burr12percentile (x, c, d, loc, scale) {
   let percentile = Math.pow(1 + Math.pow(y, c),-d);
   return percentile;
 }
+
+//jquery extension for cleaner radio group value retrieving
+jQuery.fn.extend({
+  groupVal: function() {
+      return $(this).filter(':checked').val();
+  }
+});
+
+function gameModeID (gameModeSelector) {
+  let modeID = 200;
+  switch (gameModeSelector.groupVal()) {
+    case "kz_timer"  : modeID = 200;break;
+    case "kz_simple" : modeID = 201;break;
+    case "kz_vanilla": modeID = 202;break;
+  }
+  return modeID;
+}
