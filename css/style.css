@@ -140,6 +140,10 @@ thead th{
     display: none;
 }
 
+.page-link {
+    color: white !important;
+}
+
 a{
     color:white;
 }

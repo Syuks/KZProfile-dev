@@ -229,7 +229,6 @@
     var WRsRequest;
     var PlayersRankingRequest;
     var steamRequest;
-    var mapsRequest;
 
     var currentWRsData;
     var currentPlayersRankingData;
@@ -269,7 +268,6 @@
                   "columnDefs": [
                     { "orderSequence": [ "desc", "asc" ], "targets": [2,3,4,5,6] }, //defines the direction the column sorts when first clicked
                     { "searchable": false, "orderable": false, "targets": 0 }, //para que no busquen ni ordenen la columna del index
-                    { "className": "text-left", "targets": 6}, //para que los profiles se justifiquen en la izquierda
                     { "className": "text-wrap text-left", "targets": 1} //para que no se justifiquen en el medio los nombres y no haya overflow
                   ],
                   "order": [[ 2, "desc" ]],
@@ -459,10 +457,10 @@
                 i+1,
                 '<a href="/?steamid=' + currentWRsData[i].steam_id + '&mode=' + gameModeSelector.groupVal() + runTypeParameterString + '">' + currentWRsData[i].player_name + '</a>',
                 currentWRsData[i].count,
-                playerRankingInfo.rating,
+                playerRankingInfo.rating.toFixed(2),
                 playerRankingInfo.points.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,'),
                 playerRankingInfo.finishes,
-                playerRankingInfo.average
+                playerRankingInfo.average.toFixed(2)
               ] );
             }
 
