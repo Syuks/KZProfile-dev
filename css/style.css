@@ -86,7 +86,11 @@
         margin-right: 0px !important;
         margin-left: auto;
     }
-    .fa-search {
+    .table-top .fa-search {
+        display: none;
+    }
+
+    #multiPurposeForm .fa-search{
         display: none;
     }
 
@@ -102,6 +106,26 @@
 
     .carousel-control-next {
         margin-right: -15px !important;
+    }
+
+    #userLogin {
+        margin: 8px 6px;
+    }
+
+    .loadMoreCards{
+        display: block !important;
+    }
+
+    .FirstPlaceCol {
+        order: 1;
+    }
+
+    .SecondPlaceCol {
+        order: 2;
+    }
+
+    .ThirdPlaceCol {
+        order: 3;
     }
 }
 

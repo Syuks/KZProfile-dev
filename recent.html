@@ -120,6 +120,11 @@
           <div id="pro-records"></div>
         
         </div>
+
+        <!--Only Mobile-->
+        <div class="loadMoreCards text-center d-none" style="width:100%; margin-top: 30px;">
+          <a id="loadMoreCardsMobile" ><i class="fas fa-chevron-down"></i></a>
+        </div>
         
         <div class="col-lg-6 text-center">
           
@@ -379,6 +384,9 @@
 
       //If the down arrow is clicked (Load 5 more wrs)
       $("#loadMoreCards").click(function() {
+        ShowRecentData();
+      });
+      $("#loadMoreCardsMobile").click(function() {
         ShowRecentData();
       });
 
