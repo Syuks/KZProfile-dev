@@ -241,7 +241,7 @@ function loadOpenID () {
       'https://steamcommunity.com/openid/login?' +
       'openid.ns=http://specs.openid.net/auth/2.0&' +
       'openid.mode=checkid_setup&' +
-      'openid.return_to=' + window.location.protocol + '//' + window.location.host + '/extras/steam.html/?login&' +
+      'openid.return_to=' + window.location.protocol + '//' + window.location.host + '/extras/steam.html?login&' +
       'openid.realm=' + window.location.protocol + '//' + window.location.host + '&' +
       'openid.ns.sreg=http://openid.net/extensions/sreg/1.1&' +
       'openid.claimed_id=http://specs.openid.net/auth/2.0/identifier_select&' +
